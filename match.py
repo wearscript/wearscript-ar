@@ -7,11 +7,14 @@ import cv2
 import pylab
 
 
-def fit_homography(p):
-    out = cv2.findHomography(np.ascontiguousarray(p[:, 2:]), np.ascontiguousarray(p[:, :2]), cv2.RANSAC, ransacReprojThreshold=70)
+def fit_homography(p, thresh=45, min_inliers=4):
+    out = cv2.findHomography(np.ascontiguousarray(p[:, 2:]), np.ascontiguousarray(p[:, :2]), cv2.RANSAC, ransacReprojThreshold=thresh)
     print(out)
     b = project_points(np.ascontiguousarray(p[:, 2:]), out[0]).reshape((-1, 2))
     print(np.hstack([b, p[:, :2]]))
+    if np.sum(out[1]) < min_inliers:
+        return None
+    print('Inliers: %f' % np.sum(out[1]))
     return out[0]
 
 def project_points(points, h):
@@ -38,7 +41,7 @@ def click_points(n, im):
 
 
 def imdecode(data):
-    return cv2.imdecode(np.fromstring(data, dtype=np.uint8), 0)
+    return cv2.imdecode(np.fromstring(data, dtype=np.uint8), 1)
 
 def image_size(data):
     return map(int, imdecode(data).shape)
