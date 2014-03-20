@@ -33,11 +33,13 @@ def main():
                 print('Sending')
                 ws.publish('warph:' + groupDevice, h.ravel().tolist())
             tags, tag_size = msgpack.loads(ar_model.process_binary(data[2]))
-            ws.publish('warptags', np.array(tags).reshape(tag_size).tolist())
+            ws.publish('warptags:image', np.array(tags).reshape(tag_size).tolist())
 
         def warp_sample_handler(*data):
             print('Warp Sample')
             match_points[data[1]] = image_points(data[2])
+            tags, tag_size = msgpack.loads(ar_model.process_binary(data[2]))
+            ws.publish('warptags:sample', np.array(tags).reshape(tag_size).tolist())
 
         ws.subscribe('image', image_handler)
         ws.subscribe('warpsample', warp_sample_handler)
