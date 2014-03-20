@@ -14,6 +14,9 @@ def main():
     image_points = ImagePoints()
     image_match = ImageMatch()
     match_points = {}
+
+    ar_model = picarus_takeout.ModelChain(msgpack.dumps([{'kw':{}, 'name': 'picarus.ARMarkerDetector'}]))
+    print()
     
     def callback(ws, **kw):
 
@@ -29,6 +32,8 @@ def main():
                 print('Match[%f]' % (time.time() - st))
                 print('Sending')
                 ws.publish('warph:' + groupDevice, h.ravel().tolist())
+            tags, tag_size = msgpack.loads(ar_model.process_binary(data[2]))
+            ws.publish('warptags', np.array(tags).reshape(tag_size).tolist())
 
         def warp_sample_handler(*data):
             print('Warp Sample')
